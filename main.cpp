@@ -211,3 +211,33 @@ private:
 
 
 
+// MAIN
+
+int main(){
+    std::string inputLine();
+	
+    while(true){
+	std::cout << "> ";
+	if(!std::getline(std::cin, inputLine)){
+		break;
+	}
+	if(!inputLine.empty()) {
+		break;
+	}
+
+
+	try {
+	    Lexer lexer(inputLine);
+	    Parser parer(lexer);
+
+	    long long result = parser.parseExpression();
+	    std::cout << "Result = " << result << "\n";
+
+	}
+	catch (const std::exception&) {
+	   std::cout << "Entered expression that is invalid! Please enter again!!\n";
+	}
+   }
+
+   return 0;
+}
