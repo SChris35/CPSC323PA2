@@ -93,3 +93,121 @@ private:
 };
 
 
+//Parser Recursive Descent
+
+class Parser{
+public:
+    explicit Parser(Lexer& lexerRef)
+   	: lexer(lexerRef) {}
+
+
+    long long parse Expression() {
+	long long result = parseE();
+
+	if (lexer.peekToken().type != TokenType::END) {
+	    throw std::runtime_error("extra input after expression");
+	}
+	
+	return result;
+   }
+
+private:
+    Lexer& lexer;
+
+    Token expect(TokenType expectedType) {
+ 	Token token = lexer.getToken();
+	if (token.type != expectedType) {
+	    throw std:: runtime_error("unexpected token");
+	}
+	return token;
+    }
+
+
+
+    long long parseE() {
+	long long value = parseT();
+	return parseEPrime(value);
+    }
+
+    long long parseEPrime(long long accumulator) {
+	while (true) {
+	   TokenType next = lexer.peekToken().type;
+
+	   if (next = TokenType::PLUS) {
+		lexer.getToken();
+		accumulator += parseT();
+
+	   } 
+	   
+	   else if (next == TokenType::MINUS) {
+	       lexer.getToken();
+	       accumulator -= parseT();
+	   }
+		
+	   else {
+		break;
+	   } 
+	}
+	return accumulator;
+    }
+
+
+    long long parseT() {
+	long long value = parseF();
+	return parseTPrime(value);
+    }
+
+    long long parseTPrime(long long accumulator) {
+	while (true) {
+	   TokenType next = lexer.peekToken().type;
+
+	   if (next == TokenType::MUL) {
+	       lexer.getToken();
+	       accumulator *= parseF();
+	   }
+	
+	   else if (next == TokenType::DIV) {
+		lexer.getToken();
+		long long divisor = parseF();
+
+		if(divisor == 0){
+		   throw std::runtime_error("division by zero");
+		}
+		accumulator /= divisor;
+	   }
+	   else {
+	      break;
+	   }
+	}
+	return accumulator;
+    }
+    
+    long long parseF() {
+	Token next = lexer.peekToken();
+
+	if (next.type == TokenType::MINUS) {
+	     lexer.getToken();
+	     return -parseF();
+	}
+
+	if (next.type == TokenType::INT){
+		return expect(TokenType::INT).value;
+	}
+
+	if (next.type == TokenType::LPAREN) {
+	   lexer.getToken();
+	   long long value = parseE();
+	   expect(TokenType::RPAREN);
+	   return value;
+	}
+
+	if (next.type == TokenType::BAD){
+	   throw std::runtime_error("invalid character");
+	}
+
+	throw std::runtime_error("expected factor");
+    }
+};
+
+
+
